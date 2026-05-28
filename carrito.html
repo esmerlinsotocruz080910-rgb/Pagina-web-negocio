@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito — Colmado Ocoa</title>
+  <link rel="stylesheet" href="carrito.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="img/Logo.png" alt="Colmado Ocoa" class="nav-logo-img">
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="colmado-ocoa.html" class="nav-link">Inicio</a>
+      <a href="Productos.html" class="nav-link">Productos</a>
+      <a href="carrito.html" class="nav-link active">Carrito</a>
+    </div>
+    <div class="nav-right">
+      <span class="user-chip" id="userChip">👤 Usuario</span>
+      <a href="carrito.html" class="cart-chip">🛒 <span id="cartCount">0</span></a>
+      <button class="logout-btn" onclick="logout()">⬅ Cerrar Sesion</button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Mi Carrito</h1>
+    <p>Revisa tus productos antes de confirmar</p>
+  </div>
+
+  <div class="cart-layout">
+    <div class="cart-items-col">
+      <div class="col-header">
+        <h2>Productos seleccionados</h2>
+        <button class="clear-btn" onclick="vaciarCarrito()">🗑️ Vaciar todo</button>
+      </div>
+      <div id="cartItems"></div>
+    </div>
+
+    <div class="cart-summary-col">
+      <div class="summary-card">
+        <h3>Resumen del pedido</h3>
+        <div class="summary-user">
+          <span class="summary-label">Cliente</span>
+          <span class="summary-val" id="summaryUser">Usuario</span>
+        </div>
+        <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+        <div class="summary-row"><span>Impuesto (18%)</span><span id="impuesto">$0.00</span></div>
+        <div class="summary-total">
+          <span>Total a pagar</span>
+          <span id="total">$0.00</span>
+        </div>
+        <button class="checkout-btn" onclick="abrirModal()">Confirmar pedido →</button>
+        <a href="Productos.html" class="seguir-btn">← Seguir comprando</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-cart" id="emptyCart" style="display:none;">
+    <div class="empty-icon">🛒</div>
+    <h2>Tu carrito está vacío</h2>
+    <p>Agrega productos desde la tienda para comenzar</p>
+    <a href="Productos.html" class="btn-primary">Ver productos →</a>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div class="modal-overlay" id="modalPedido">
+    <div class="modal-card" id="modalCard">
+
+      <!-- Paso 1: tipo de entrega -->
+      <div id="paso1">
+        <h3>¿Cómo quieres tu pedido?</h3>
+        <p class="modal-sub">Elige una opción para continuar</p>
+        <div class="entrega-opciones">
+          <button class="entrega-btn" onclick="irPaso(2,'domicilio')">
+            <div>
+              <div class="entrega-label">Envío a domicilio</div>
+              <div class="entrega-desc">Te lo llevamos a donde estés</div>
+            </div>
+            <span class="entrega-arrow">→</span>
+          </button>
+          <button class="entrega-btn" onclick="irPaso(2,'tienda')">
+            <div>
+              <div class="entrega-label">Recoger en tienda</div>
+              <div class="entrega-desc">Res. Jardines de Genoveba</div>
+            </div>
+            <span class="entrega-arrow">→</span>
+          </button>
+        </div>
+        <button class="modal-cancel" onclick="cerrarModal()">Cancelar</button>
+      </div>
+
+      <!-- Paso 2a: domicilio -->
+      <div id="paso2domicilio" style="display:none;">
+        <h3>Datos para el envío</h3>
+        <p class="modal-sub">Completa tu información para coordinar la entrega</p>
+        <div class="form-field">
+          <label>Nombre completo</label>
+          <input type="text" id="d-nombre" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-field">
+          <label>Número de teléfono</label>
+          <input type="tel" id="d-telefono" placeholder="Ej: 829-555-0000">
+        </div>
+        <div class="form-field">
+          <label>Dirección de entrega</label>
+          <input type="text" id="d-direccion" placeholder="Calle, número, sector...">
+        </div>
+        <div class="form-field">
+          <label>Referencias <span class="opcional">(opcional)</span></label>
+          <input type="text" id="d-referencia" placeholder="Cerca de, color de la casa...">
+        </div>
+        <div class="modal-btns">
+          <button class="modal-back" onclick="irPaso(1,'')">← Atrás</button>
+          <button class="checkout-btn" id="btnEnviarDomicilio" onclick="enviarDomicilio()">
+            <span>Confirmar y enviar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2b: tienda -->
+      <div id="paso2tienda" style="display:none;">
+        <h3>Recoger en tienda</h3>
+        <p class="modal-sub">Tu pedido estará listo cuando llegues</p>
+        <div class="tienda-info">
+          <div class="tienda-row"><span></span><span>Residencial Jardines de Genoveba</span></div>
+          <div class="tienda-row"><span></span><span>Lun–Sáb 7:00am – 9:00pm</span></div>
+        </div>
+        <div class="mapa-wrap">
+          <iframe
+            src="https://www.google.com/maps?q=Residencial+Jardines+de+Genoveba,+Santo+Domingo&output=embed"
+            width="100%" height="180"
+            style="border:0; border-radius:12px;"
+            allowfullscreen="" loading="lazy">
+          </iframe>
+        </div>
+        <div class="form-field" style="margin-top:14px;">
+          <label>Tu nombre</label>
+          <input type="text" id="t-nombre" placeholder="Para preparar tu pedido">
+        </div>
+        <div class="form-field">
+          <label>Tu teléfono</label>
+          <input type="tel" id="t-telefono" placeholder="Ej: 829-555-0000">
+        </div>
+        <div class="modal-btns">
+          <button class="modal-back" onclick="irPaso(1,'')">← Atrás</button>
+          <button class="checkout-btn" id="btnEnviarTienda" onclick="enviarTienda()">
+            <span>Confirmar pedido</span>
+            <span class="wa-icon">💬</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3: éxito -->
+      <div id="paso3" style="display:none;">
+        <div class="modal-icon">🎉</div>
+        <h3>¡Pedido confirmado!</h3>
+        <p class="modal-sub" id="numPedido"></p>
+        <div class="modal-details" id="modalDetails"></div>
+        <button class="checkout-btn" onclick="finalizar()" style="margin-top:16px;">Aceptar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="footer-brand">Colmado Ocoa</span>
+      <span class="footer-copy">© 2026 · Todos los derechos reservados</span>
+    </div>
+  </footer>
+
+  <script>
+    const usuario = localStorage.getItem('co_usuario') || 'Usuario';
+    document.getElementById('userChip').textContent    = '👤 ' + usuario;
+    document.getElementById('summaryUser').textContent = usuario;
+
+    function getCart()   { return JSON.parse(localStorage.getItem('co_carrito') || '[]'); }
+    function saveCart(c) { localStorage.setItem('co_carrito', JSON.stringify(c)); }
+
+    function updateCartCount() {
+      document.getElementById('cartCount').textContent = getCart().reduce((s,i) => s + i.qty, 0);
+    }
+
+    function cambiarCantidad(id, delta) {
+      let cart = getCart();
+      const idx = cart.findIndex(i => i.id === id);
+      if (idx >= 0) {
+        cart[idx].qty += delta;
+        if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      }
+      saveCart(cart);
+      renderCart();
+    }
+
+    function eliminarItem(id) { saveCart(getCart().filter(i => i.id !== id)); renderCart(); }
+
+    function vaciarCarrito() {
+      if (confirm('¿Vaciar el carrito?')) { saveCart([]); renderCart(); }
+    }
+
+    function renderCart() {
+      const cart      = getCart();
+      const container = document.getElementById('cartItems');
+      const emptyDiv  = document.getElementById('emptyCart');
+      const layout    = document.querySelector('.cart-layout');
+      updateCartCount();
+
+      if (cart.length === 0) {
+        layout.style.display  = 'none';
+        emptyDiv.style.display = 'flex';
+        updateSummary(0);
+        return;
+      }
+
+      layout.style.display   = 'grid';
+      emptyDiv.style.display = 'none';
+      container.innerHTML    = '';
+      let subtotal = 0;
+
+      cart.forEach(item => {
+        const it = item.precio * item.qty;
+        subtotal += it;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <div class="item-img-wrap">
+            <img class="item-img" src="img/${item.img}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="item-img-ph">🛒</div>
+          </div>
+          <div class="item-info">
+            <div class="item-nombre">${item.nombre}</div>
+            <div class="item-cat">${item.categoria}</div>
+            <div class="item-unit">$${Number(item.precio).toFixed(2)} c/u</div>
+          </div>
+          <div class="item-qty">
+            <button class="qty-btn" onclick="cambiarCantidad(${item.id},-1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="cambiarCantidad(${item.id},1)">+</button>
+          </div>
+          <div class="item-total">$${it.toFixed(2)}</div>
+          <button class="del-btn" onclick="eliminarItem(${item.id})">✕</button>`;
+        container.appendChild(div);
+      });
+
+      updateSummary(subtotal);
+    }
+
+    function updateSummary(sub) {
+      const imp   = sub * 0.18;
+      const total = sub + imp;
+      document.getElementById('subtotal').textContent = '$' + sub.toFixed(2);
+      document.getElementById('impuesto').textContent = '$' + imp.toFixed(2);
+      document.getElementById('total').textContent    = '$' + total.toFixed(2);
+    }
+
+    // ── Modal ────────────────────────────────────────────────
+    const pasos = ['paso1','paso2domicilio','paso2tienda','paso3'];
+
+    function abrirModal() {
+      if (!getCart().length) return;
+      irPaso(1,'');
+      document.getElementById('modalPedido').classList.add('active');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalPedido').classList.remove('active');
+    }
+
+    function irPaso(num, tipo) {
+      pasos.forEach(p => document.getElementById(p).style.display = 'none');
+      if (num === 1) document.getElementById('paso1').style.display = 'block';
+      if (num === 2 && tipo === 'domicilio') document.getElementById('paso2domicilio').style.display = 'block';
+      if (num === 2 && tipo === 'tienda')    document.getElementById('paso2tienda').style.display = 'block';
+      if (num === 3) document.getElementById('paso3').style.display = 'block';
+    }
+
+    // ── Confirmar pedido → servidor → BD ────────────────────
+    async function confirmarPedido(tipo, datos) {
+      const cart     = getCart();
+      const subtotal = cart.reduce((s,i) => s + i.precio * i.qty, 0);
+      const impuesto = subtotal * 0.18;
+      const total    = subtotal + impuesto;
+
+      // Deshabilitar botón
+      const btnId = tipo === 'domicilio' ? 'btnEnviarDomicilio' : 'btnEnviarTienda';
+      const btn   = document.getElementById(btnId);
+      btn.disabled = true;
+      btn.querySelector('span').textContent = 'Guardando en BD...';
+
+      try {
+        const resp = await fetch('http://localhost:3000/api/confirmar-pedido', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            usuario_nombre: usuario,
+            cliente_nombre: datos.nombre,
+            telefono:       datos.telefono,
+            tipo_entrega:   tipo,
+            direccion:      datos.direccion  || '',
+            referencia:     datos.referencia || '',
+            subtotal,
+            impuesto,
+            total,
+            items: cart.map(i => ({
+              id:     i.id,
+              nombre: i.nombre,
+              precio: i.precio,
+              qty:    i.qty
+            }))
+          })
+        });
+
+        const data = await resp.json();
+
+        if (!data.ok) {
+          alert('❌ ' + data.mensaje);
+          btn.disabled = false;
+          btn.querySelector('span').textContent = 'Confirmar y enviar';
+          return;
+        }
+
+        // ✅ Éxito — mostrar confirmación
+        const now   = new Date();
+        const fecha = now.toLocaleDateString('es-DO') + ' ' +
+                      now.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'});
+
+        document.getElementById('numPedido').textContent =
+          `Pedido #${data.venta_id} guardado en el sistema · ${fecha}`;
+
+        document.getElementById('modalDetails').innerHTML = `
+          <div class="detail-row"><span>Cliente</span><strong>${datos.nombre}</strong></div>
+          <div class="detail-row"><span>Tipo</span><strong>${tipo === 'domicilio' ? '🛵 Domicilio' : '🏪 Tienda'}</strong></div>
+          ${datos.direccion ? `<div class="detail-row"><span>Dirección</span><strong>${datos.direccion}</strong></div>` : ''}
+          <div class="detail-row"><span>Total</span><strong style="color:#1D9E75;font-size:17px;">$${total.toFixed(2)}</strong></div>`;
+
+        irPaso(3,'');
+
+        // Enviar WhatsApp
+        const lineas = cart.map(i => `• ${i.nombre} x${i.qty} — $${(i.precio*i.qty).toFixed(2)}`).join('\n');
+        let msg = `🛒 *PEDIDO #${data.venta_id} — Colmado Ocoa*\n\n`;
+        msg += `*Tipo:* ${tipo === 'domicilio' ? '🛵 Envío a domicilio' : '🏪 Recoger en tienda'}\n`;
+        msg += `*Cliente:* ${datos.nombre}\n`;
+        msg += `*Teléfono:* ${datos.telefono}\n`;
+        if (datos.direccion)  msg += `*Dirección:* ${datos.direccion}\n`;
+        if (datos.referencia) msg += `*Referencia:* ${datos.referencia}\n`;
+        msg += `\n🗒️ *Productos:*\n${lineas}\n\n`;
+        msg += `*Subtotal:* $${subtotal.toFixed(2)}\n`;
+        msg += `*Impuesto 18%:* $${impuesto.toFixed(2)}\n`;
+        msg += `*TOTAL: $${total.toFixed(2)}*\n`;
+        msg += `📅 ${fecha}`;
+
+        setTimeout(() => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank'), 400);
+
+      } catch (err) {
+        alert('❌ No se pudo conectar con el servidor. ¿Está corriendo node server.js?');
+        btn.disabled = false;
+        btn.querySelector('span').textContent = 'Confirmar y enviar';
+      }
+    }
+
+    function enviarDomicilio() {
+      const nombre     = document.getElementById('d-nombre').value.trim();
+      const telefono   = document.getElementById('d-telefono').value.trim();
+      const direccion  = document.getElementById('d-direccion').value.trim();
+      const referencia = document.getElementById('d-referencia').value.trim();
+      if (!nombre || !telefono || !direccion) {
+        alert('Completa nombre, teléfono y dirección.');
+        return;
+      }
+      confirmarPedido('domicilio', { nombre, telefono, direccion, referencia });
+    }
+
+    function enviarTienda() {
+      const nombre   = document.getElementById('t-nombre').value.trim();
+      const telefono = document.getElementById('t-telefono').value.trim();
+      if (!nombre || !telefono) { alert('Completa tu nombre y teléfono.'); return; }
+      confirmarPedido('tienda', { nombre, telefono });
+    }
+
+    function finalizar() {
+      saveCart([]);
+      cerrarModal();
+      renderCart();
+    }
+
+    function logout()      { localStorage.removeItem('co_usuario'); window.location.href = 'inicio-sesion.html'; }
+    function toggleMenu()  { document.getElementById('navLinks').classList.toggle('open'); }
+
+    renderCart();
+  </script>
+</body>
+</html>

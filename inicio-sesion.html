@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio de Sesión — Colmado Ocoa</title>
+  <link rel="stylesheet" href="Inicio de sesion.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="bg-shapes">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+    <div class="shape s3"></div>
+  </div>
+
+  <div class="login-container">
+
+    <div class="login-brand">
+      <div class="brand-logo">
+        <img src="img/Logo.png" alt="Colmado Ocoa Logo" class="brand-logo-img">
+      </div>
+      <p>Sistema de facturación digital</p>
+    </div>
+
+    <div class="login-card" id="loginCard">
+      <div class="card-header">
+        <h2>Bienvenido</h2>
+        <p>Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <div class="form-group">
+        <label for="correo">Correo electrónico</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="text" id="correo" placeholder="ejemplo_1@correo.com" autocomplete="off" oninput="validarCorreo()">
+        </div>
+        <div class="req-list" id="emailReqs">
+          <div class="req-item" id="req-at"><span class="req-dot"></span> Contiene @</div>
+          <div class="req-item" id="req-domain"><span class="req-dot"></span> Tiene dominio (.com, .net, .org...)</div>
+          <div class="req-item" id="req-special"><span class="req-dot"></span> Carácter especial antes del @ ( . _ - )</div>
+          <div class="req-item" id="req-num"><span class="req-dot"></span> Contiene al menos un número</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="contrasena">Contraseña</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="contrasena" placeholder="••••••••" oninput="validarPassword()">
+          <button class="toggle-pw" onclick="togglePw()" type="button">👁️</button>
+        </div>
+        <div class="req-list" id="passReqs">
+          <div class="req-item" id="req-upper"><span class="req-dot"></span> Al menos una letra mayúscula</div>
+          <div class="req-item" id="req-pnum"><span class="req-dot"></span> Al menos un número</div>
+          <div class="req-item" id="req-pspecial"><span class="req-dot"></span> Al menos un carácter especial (!@#$%...)</div>
+        </div>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <button class="login-btn" onclick="handleLogin()">
+        <span>Iniciar Sesión</span>
+        <span class="btn-arrow">→</span>
+      </button>
+
+      <p class="login-hint">¿No tienes cuenta? <a href="Registro.html" class="link-login">Regístrate aquí</a></p>
+    </div>
+
+  </div>
+
+  <script src="funciones.js"></script>
+
+</body>
+</html>

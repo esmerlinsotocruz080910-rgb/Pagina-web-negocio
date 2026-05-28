@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — Colmado Ocoa</title>
+  <link rel="stylesheet" href="Admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+  <img src="img/Logo.png" alt="Colmado Ocoa" class="nav-logo">
+  <div class="nav-right">
+    <span class="admin-badge">👑 ADMIN</span>
+    <span class="user-chip" id="userChip">👤 Admin</span>
+    <button class="logout-btn" onclick="logout()">⬅ Cerrar sesión</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>Panel de Administración</h1>
+  <p>Gestiona productos, stock y categorías del Colmado Ocoa</p>
+</div>
+
+<div class="content" style="padding-bottom:0; margin-top:24px;">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Productos totales</div></div>
+    <div class="stat-card"><div class="stat-num" id="statAgotados">—</div><div class="stat-label">Agotados</div></div>
+    <div class="stat-card"><div class="stat-num" id="statBajos">—</div><div class="stat-label">Stock bajo (&lt;10)</div></div>
+    <div class="stat-card"><div class="stat-num" id="statCats">—</div><div class="stat-label">Categorías</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="cambiarTab('stock', this)">📦 Gestionar Stock</button>
+  <button class="tab-btn" onclick="cambiarTab('agregar', this)">➕ Agregar Producto</button>
+  <button class="tab-btn" onclick="cambiarTab('categorias', this)">🏷️ Categorías</button>
+</div>
+
+<div class="content">
+
+  <!-- PANEL STOCK -->
+  <div class="panel active" id="panel-stock">
+    <div class="card">
+      <h3>📦 Inventario de productos</h3>
+      <div class="search-bar">
+        <input type="text" id="buscarStock" placeholder="🔍 Buscar producto..." oninput="filtrarTabla()">
+        <select id="filtrarCat" onchange="filtrarTabla()">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="stock-table">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Precio (RD$)</th>
+              <th>Estado</th>
+              <th>Stock</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="stockBody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:#aaa;">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL AGREGAR -->
+  <div class="panel" id="panel-agregar">
+    <div class="card">
+      <h3>➕ Agregar nuevo producto</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre del producto *</label>
+          <input type="text" id="np-nombre" placeholder="Ej: Aceite Mazola">
+        </div>
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select id="np-categoria">
+            <option value="">Selecciona una categoría</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Precio (RD$) *</label>
+          <input type="number" id="np-precio" placeholder="Ej: 150" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Stock inicial *</label>
+          <input type="number" id="np-stock" placeholder="Ej: 50" min="0">
+        </div>
+        <div class="form-group full">
+          <label>Imagen del producto</label>
+          <div class="img-upload-area" id="uploadArea">
+            <input type="file" id="np-imagen" accept="image/*" onchange="previsualizarImagen(this)">
+            <div class="upload-icon">🖼️</div>
+            <p>Arrastra una imagen o <strong>haz clic para seleccionar</strong></p>
+            <p style="font-size:11px;margin-top:4px;color:#bbb;">PNG, JPG, WEBP — máx. 5MB</p>
+            <img class="img-preview" id="imgPreview" src="" alt="Vista previa">
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:12px;align-items:center;">
+        <button class="btn-primary" onclick="agregarProducto()">✅ Guardar producto</button>
+        <span id="formMsg" style="font-size:13px;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL CATEGORÍAS -->
+  <div class="panel" id="panel-categorias">
+    <div class="card">
+      <h3>🏷️ Categorías existentes</h3>
+      <div class="cat-pills-admin" id="catList">
+        <span style="color:#aaa;font-size:13px;">Cargando...</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>➕ Nueva categoría</h3>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="nuevaCat" placeholder="Ej: Snacks"
+          style="padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:11px;font-size:14px;font-family:'DM Sans',sans-serif;flex:1;min-width:200px;outline:none;">
+        <button class="btn-primary" onclick="agregarCategoria()">➕ Agregar</button>
+      </div>
+      <p style="font-size:12px;color:#aaa;margin-top:10px;">La categoría estará disponible al agregar nuevos productos.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Verificar que es admin ──────────────────────────────
+  if (localStorage.getItem('co_rol') !== 'admin') {
+    window.location.href = 'inicio-sesion.html';
+  }
+
+  const usuario = localStorage.getItem('co_usuario') || 'Admin';
+  document.getElementById('userChip').textContent = '👤 ' + usuario;
+
+  let productos   = [];
+  let catsLocales = [];
+
+  // ── Cargar todo al inicio ───────────────────────────────
+  async function cargarTodo() {
+    await cargarCategorias();
+    await cargarProductos();
+  }
+
+  async function cargarProductos() {
+    try {
+      const resp = await fetch('http://localhost:3000/api/productos');
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.mensaje);
+      productos = data.productos;
+      renderTablaStock(productos);
+      actualizarStats();
+    } catch (e) {
+      document.getElementById('stockBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;color:#e24b4a;padding:24px;">❌ Error al cargar productos. ¿Está corriendo node server.js?</td></tr>';
+    }
+  }
+
+  async function cargarCategorias() {
+    try {
+      const resp = await fetch('http://localhost:3000/api/categorias');
+      const data = await resp.json();
+      if (!data.ok) throw new Error();
+      catsLocales = data.categorias;
+      renderCategorias();
+      llenarSelectCats();
+    } catch {
+      console.error('Error al cargar categorías');
+    }
+  }
+
+  // ── Stats ───────────────────────────────────────────────
+  function actualizarStats() {
+    const cats = new Set(productos.map(p => p.categoria));
+    document.getElementById('statTotal').textContent    = productos.length;
+    document.getElementById('statAgotados').textContent = productos.filter(p => p.stock === 0).length;
+    document.getElementById('statBajos').textContent    = productos.filter(p => p.stock > 0 && p.stock < 10).length;
+    document.getElementById('statCats').textContent     = cats.size;
+  }
+
+  // ── Tabla de stock ──────────────────────────────────────
+  function renderTablaStock(lista) {
+    // Actualizar filtro de categorías
+    const cats = [...new Set(lista.map(p => p.categoria))].sort();
+    const sel  = document.getElementById('filtrarCat');
+    const valSel = sel.value;
+    sel.innerHTML = '<option value="">Todas las categorías</option>' +
+      cats.map(c => '<option value="' + c + '"' + (c === valSel ? ' selected' : '') + '>' + c + '</option>').join('');
+
+    const tbody = document.getElementById('stockBody');
+    if (lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#aaa;">No hay productos</td></tr>';
+      return;
+    }
+
+    let filas = '';
+    for (let i = 0; i < lista.length; i++) {
+      const p = lista[i];
+
+      let badge = '';
+      if (p.stock === 0) {
+        badge = '<span class="badge-stock badge-out">Agotado</span>';
+      } else if (p.stock < 10) {
+        badge = '<span class="badge-stock badge-low">Bajo (' + p.stock + ')</span>';
+      } else {
+        badge = '<span class="badge-stock badge-ok">OK (' + p.stock + ')</span>';
+      }
+
+      let catOpts = '';
+      for (let j = 0; j < catsLocales.length; j++) {
+        const c = catsLocales[j];
+        catOpts += '<option value="' + c + '"' + (c === p.categoria ? ' selected' : '') + '>' + c + '</option>';
+      }
+
+      filas += '<tr>';
+      filas += '<td><img class="img-thumb" src="img/' + p.img + '" onerror="this.src=\'\'" alt="' + p.nombre + '"></td>';
+      filas += '<td><strong>' + p.nombre + '</strong></td>';
+      filas += '<td><select class="stock-input" id="cat-' + p.id + '" style="width:140px;">' + catOpts + '</select></td>';
+      filas += '<td><input class="stock-input" type="number" min="0" step="0.01" value="' + Number(p.precio).toFixed(2) + '" id="pr-' + p.id + '" style="width:85px;"></td>';
+      filas += '<td>' + badge + '</td>';
+      filas += '<td><input class="stock-input" type="number" min="0" value="' + p.stock + '" id="st-' + p.id + '" style="width:75px;"></td>';
+      filas += '<td class="td-accion">';
+      filas += '<button class="btn-sm" onclick="guardarProducto(' + p.id + ')">💾 Guardar</button>';
+      filas += '<button class="btn-del" onclick="eliminarProducto(' + p.id + ', \'' + p.nombre.replace(/'/g, '\\\'') + '\')">🗑️</button>';
+      filas += '</td>';
+      filas += '</tr>';
+    }
+    tbody.innerHTML = filas;
+  }
+
+  function filtrarTabla() {
+    const busq = document.getElementById('buscarStock').value.toLowerCase();
+    const cat  = document.getElementById('filtrarCat').value;
+    const filtrados = productos.filter(p =>
+      p.nombre.toLowerCase().includes(busq) && (cat === '' || p.categoria === cat)
+    );
+    renderTablaStock(filtrados);
+  }
+
+  // ── Guardar producto (stock + precio + categoría) ───────
+  async function guardarProducto(id) {
+    const stEl  = document.getElementById('st-' + id);
+    const prEl  = document.getElementById('pr-' + id);
+    const catEl = document.getElementById('cat-' + id);
+
+    if (!stEl || !prEl || !catEl) { showToast('❌ No se encontraron los campos'); return; }
+
+    const stock     = parseInt(stEl.value);
+    const precio    = parseFloat(prEl.value);
+    const categoria = catEl.value;
+
+    if (isNaN(stock) || stock < 0)    { showToast('⚠️ Stock inválido'); return; }
+    if (isNaN(precio) || precio <= 0) { showToast('⚠️ Precio inválido'); return; }
+    if (!categoria)                   { showToast('⚠️ Selecciona una categoría'); return; }
+
+    try {
+      const resp = await fetch('http://localhost:3000/api/admin/stock', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, stock, precio, categoria })
+      });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.mensaje);
+      showToast('✅ Producto actualizado correctamente');
+      await cargarProductos();
+    } catch (err) {
+      showToast('❌ ' + err.message);
+    }
+  }
+
+  // ── Eliminar producto ───────────────────────────────────
+  async function eliminarProducto(id, nombre) {
+    if (!confirm('¿Eliminar "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+    try {
+      const resp = await fetch('http://localhost:3000/api/admin/producto/' + id, { method: 'DELETE' });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.mensaje);
+      showToast('🗑️ Producto eliminado');
+      await cargarProductos();
+    } catch (err) {
+      showToast('❌ ' + err.message);
+    }
+  }
+
+  // ── Agregar producto ────────────────────────────────────
+  function previsualizarImagen(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById('imgPreview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.querySelector('.upload-icon').textContent = '✅';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function agregarProducto() {
+    const nombre    = document.getElementById('np-nombre').value.trim();
+    const categoria = document.getElementById('np-categoria').value;
+    const precio    = document.getElementById('np-precio').value;
+    const stock     = document.getElementById('np-stock').value;
+    const imgFile   = document.getElementById('np-imagen').files[0];
+    const msg       = document.getElementById('formMsg');
+
+    if (!nombre || !categoria || !precio || !stock) {
+      msg.textContent = '⚠️ Completa todos los campos obligatorios';
+      msg.style.color = '#e24b4a';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('nombre',    nombre);
+    formData.append('categoria', categoria);
+    formData.append('precio',    precio);
+    formData.append('stock',     stock);
+    if (imgFile) formData.append('imagen', imgFile);
+
+    msg.textContent = '⏳ Guardando...';
+    msg.style.color = '#777';
+
+    try {
+      const resp = await fetch('http://localhost:3000/api/admin/producto', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.mensaje);
+
+      showToast('✅ Producto agregado exitosamente');
+      msg.textContent = '';
+      document.getElementById('np-nombre').value    = '';
+      document.getElementById('np-categoria').value = '';
+      document.getElementById('np-precio').value    = '';
+      document.getElementById('np-stock').value     = '';
+      document.getElementById('np-imagen').value    = '';
+      document.getElementById('imgPreview').style.display = 'none';
+      document.querySelector('.upload-icon').textContent  = '🖼️';
+      await cargarProductos();
+    } catch (err) {
+      msg.textContent = '❌ ' + err.message;
+      msg.style.color = '#e24b4a';
+    }
+  }
+
+  // ── Categorías ──────────────────────────────────────────
+  function renderCategorias() {
+    const cont = document.getElementById('catList');
+    if (catsLocales.length === 0) {
+      cont.innerHTML = '<span style="color:#aaa;font-size:13px;">No hay categorías</span>';
+      return;
+    }
+    cont.innerHTML = catsLocales.map(c =>
+      '<div class="cat-pill-item"><span>' + c + '</span></div>'
+    ).join('');
+  }
+
+  function llenarSelectCats() {
+    const sel = document.getElementById('np-categoria');
+    sel.innerHTML = '<option value="">Selecciona una categoría</option>' +
+      catsLocales.map(c => '<option value="' + c + '">' + c + '</option>').join('');
+  }
+
+  function agregarCategoria() {
+    const input = document.getElementById('nuevaCat');
+    const nueva = input.value.trim();
+    if (!nueva) { showToast('⚠️ Escribe el nombre de la categoría'); return; }
+    if (catsLocales.includes(nueva)) { showToast('⚠️ Esa categoría ya existe'); return; }
+    catsLocales.push(nueva);
+    renderCategorias();
+    llenarSelectCats();
+    input.value = '';
+    showToast('✅ Categoría "' + nueva + '" agregada');
+  }
+
+  // ── Tabs ────────────────────────────────────────────────
+  function cambiarTab(tab, btn) {
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('panel-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Toast ───────────────────────────────────────────────
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 3000);
+  }
+
+  function logout() {
+    localStorage.removeItem('co_usuario');
+    localStorage.removeItem('co_rol');
+    localStorage.removeItem('co_correo');
+    window.location.href = 'inicio-sesion.html';
+  }
+
+  cargarTodo();
+</script>
+</body>
+</html>

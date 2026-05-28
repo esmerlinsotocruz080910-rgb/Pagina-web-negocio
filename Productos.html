@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos — Colmado Ocoa</title>
+  <link rel="stylesheet" href="productos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="img/Logo.png" alt="Colmado Ocoa" class="nav-logo-img">
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="colmado-ocoa.html" class="nav-link">Inicio</a>
+      <a href="Productos.html" class="nav-link active">Productos</a>
+      <a href="carrito.html" class="nav-link">Carrito</a>
+    </div>
+    <div class="nav-right">
+      <span class="user-chip" id="userChip">👤 Usuario</span>
+      <a href="carrito.html" class="cart-chip">🛒 <span id="cartCount">0</span></a>
+      <button class="logout-btn" onclick="logout()">⬅ Cerrar sesion</button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Productos</h1>
+    <p>Encuentra todo lo que necesitas en un solo lugar</p>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar producto..." oninput="filtrar()">
+    </div>
+    <select id="catFilter" onchange="filtrar()">
+      <option value="">Todas las categorías</option>
+      <option value="Granos">Granos</option>
+      <option value="Lácteos">Lácteos</option>
+      <option value="Líquidos">Líquidos</option>
+      <option value="Panaderia">Panaderia</option>
+      <option value="Condimentos">Condimentos</option>
+      <option value="Bebidas">Bebidas</option>
+      <option value="Dulces">Dulces</option>
+      <option value="Despensa">Despensa</option>
+      <option value="Carnes">Carnes</option>
+      <option value="Viveres">Viveres</option>
+      <option value="Cereales">Cereales</option>
+      <option value="Proteinas">Proteinas</option>
+      <option value="Vegetales">Vegetales</option>
+      <option value="Limpieza e higiene">Limpieza e higiene</option>
+    </select>
+  </div>
+
+  <div class="cat-pills">
+    <button class="pill active" onclick="filtrarCat('', this)">Todos</button>
+    <button class="pill" onclick="filtrarCat('Granos', this)">Granos</button>
+    <button class="pill" onclick="filtrarCat('Lácteos', this)">Lácteos</button>
+    <button class="pill" onclick="filtrarCat('Carnes', this)">Carnes</button>
+    <button class="pill" onclick="filtrarCat('Bebidas', this)">Bebidas</button>
+    <button class="pill" onclick="filtrarCat('Dulces', this)">Dulces</button>
+    <button class="pill" onclick="filtrarCat('Despensa', this)">Despensa</button>
+    <button class="pill" onclick="filtrarCat('Condimentos', this)">Condimentos</button>
+    <button class="pill" onclick="filtrarCat('Panaderia', this)">Panaderia</button>
+    <button class="pill" onclick="filtrarCat('Viveres', this)">Viveres</button>
+    <button class="pill" onclick="filtrarCat('Cereales', this)">Cereales</button>
+    <button class="pill" onclick="filtrarCat('Proteinas', this)">Proteinas</button>
+    <button class="pill" onclick="filtrarCat('Vegetales', this)">Vegetales</button>
+    <button class="pill" onclick="filtrarCat('Limpieza e higiene', this)">Limpieza e higiene</button>
+  </div>
+
+  <div class="result-info">
+    <span id="resultInfo">Cargando productos...</span>
+  </div>
+
+  <div class="products-grid" id="productGrid">
+    <div class="empty-state">⏳ Cargando productos desde la base de datos...</div>
+  </div>
+
+  <div class="paginacion" id="paginacion"></div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="footer-brand">Colmado Ocoa</span>
+      <span class="footer-copy">© 2026 · Todos los derechos reservados</span>
+    </div>
+  </footer>
+
+  <script>
+    const POR_PAGINA = 8;
+    let pagina   = 1;
+    let productos = [];
+    let filtrados = [];
+
+    const usuario = localStorage.getItem('co_usuario') || 'Usuario';
+    document.getElementById('userChip').textContent = '👤 ' + usuario;
+
+    // ── Cargar productos desde la BD ─────────────────────
+    async function cargarProductos() {
+      try {
+        const resp = await fetch('http://localhost:3000/api/productos');
+        const data = await resp.json();
+        if (!data.ok) throw new Error(data.mensaje);
+        productos = data.productos;
+        filtrados = [...productos];
+
+        // Revisar si viene categoria por URL
+        const catUrl = new URLSearchParams(window.location.search).get('cat');
+        if (catUrl) {
+          filtrados = productos.filter(p => p.categoria === catUrl);
+          document.getElementById('catFilter').value = catUrl;
+          document.querySelectorAll('.pill').forEach(p => {
+            p.classList.remove('active');
+            if (p.textContent.trim() === catUrl) p.classList.add('active');
+          });
+        }
+
+        renderizar();
+        updateCartCount();
+      } catch (err) {
+        document.getElementById('productGrid').innerHTML =
+          `<div class="empty-state">❌ No se pudo conectar con el servidor.<br>¿Está corriendo node server.js?</div>`;
+        document.getElementById('resultInfo').textContent = 'Error al cargar productos';
+      }
+    }
+
+    // ── Carrito ───────────────────────────────────────────
+    function getCart()  { return JSON.parse(localStorage.getItem('co_carrito') || '[]'); }
+
+    function updateCartCount() {
+      const total = getCart().reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cartCount').textContent = total;
+    }
+
+    function validarQty(input, stock) {
+      const val = parseInt(input.value);
+      if (isNaN(val) || val < 1) return;
+      if (val > stock) {
+        input.style.borderColor = '#e24b4a';
+        input.style.boxShadow   = '0 0 0 3px rgba(226,75,74,0.15)';
+        showToast(`⚠️ Solo hay ${stock} unidades disponibles en stock`);
+      } else {
+        input.style.borderColor = '';
+        input.style.boxShadow   = '';
+      }
+    }
+
+    function addToCart(id) {
+      const prod = productos.find(p => p.id === id);
+      if (!prod) return;
+
+      const inputEl = document.getElementById('qty-' + id);
+      const qty     = Math.max(1, parseInt(inputEl.value) || 1);
+
+      let cart    = getCart();
+      const idx   = cart.findIndex(i => i.id === id);
+      const yaEnCarrito = idx >= 0 ? cart[idx].qty : 0;
+
+      if (yaEnCarrito + qty > prod.stock) {
+        showToast(`⚠️ Solo hay ${prod.stock} en stock (ya tienes ${yaEnCarrito} en el carrito)`);
+        return;
+      }
+
+      if (idx >= 0) {
+        cart[idx].qty += qty;
+      } else {
+        cart.push({ ...prod, qty });
+      }
+
+      localStorage.setItem('co_carrito', JSON.stringify(cart));
+      updateCartCount();
+      inputEl.value = 1;
+      showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}${prod.nombre} agregado al carrito`);
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ── Filtros ───────────────────────────────────────────
+    function filtrar() {
+      const busq = document.getElementById('searchInput').value.toLowerCase();
+      const cat  = document.getElementById('catFilter').value;
+      filtrados  = productos.filter(p => {
+        return p.nombre.toLowerCase().includes(busq) &&
+               (cat === '' || p.categoria === cat);
+      });
+      pagina = 1;
+      renderizar();
+    }
+
+    function filtrarCat(cat, btn) {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('catFilter').value = cat;
+      filtrar();
+    }
+
+    // ── Render ────────────────────────────────────────────
+    function renderizar() {
+      const grid   = document.getElementById('productGrid');
+      const inicio = (pagina - 1) * POR_PAGINA;
+      const fin    = inicio + POR_PAGINA;
+      const pags   = filtrados.slice(inicio, fin);
+
+      document.getElementById('resultInfo').textContent =
+        filtrados.length === 0
+          ? 'No se encontraron productos'
+          : `Mostrando ${inicio + 1}–${Math.min(fin, filtrados.length)} de ${filtrados.length} productos`;
+
+      grid.innerHTML = '';
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = '<div class="empty-state">😕 No hay productos que coincidan</div>';
+        document.getElementById('paginacion').innerHTML = '';
+        return;
+      }
+
+      pags.forEach(p => {
+        const sinStock = p.stock === 0;
+        const lowStock = p.stock > 0 && p.stock < 10;
+        const card     = document.createElement('div');
+        card.className = 'prod-card' + (sinStock ? ' agotado' : '');
+        card.innerHTML = `
+          <div class="prod-img-wrap">
+            <img class="prod-img" src="img/${p.img}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="prod-img-placeholder">🛒</div>
+            ${sinStock ? '<div class="agotado-badge">Agotado</div>' : ''}
+          </div>
+          <div class="prod-nombre">${p.nombre}</div>
+          <div class="prod-cat">${p.categoria}</div>
+          <div class="prod-precio">$${Number(p.precio).toFixed(2)}</div>
+          <div class="prod-stock ${sinStock ? 'agotado-text' : lowStock ? 'low' : ''}">
+            Stock: ${p.stock}
+          </div>
+          <div class="prod-qty-wrap">
+            <input class="prod-qty-input" type="number" min="1" max="${p.stock}" value="1"
+              id="qty-${p.id}" ${sinStock ? 'disabled' : ''}
+              oninput="validarQty(this, ${p.stock})">
+            <button class="prod-add" onclick="addToCart(${p.id})" ${sinStock ? 'disabled' : ''}>
+              ${sinStock ? '❌ Agotado' : '+ Agregar'}
+            </button>
+          </div>`;
+        grid.appendChild(card);
+      });
+
+      renderPaginacion();
+    }
+
+    function renderPaginacion() {
+      const total = Math.ceil(filtrados.length / POR_PAGINA);
+      const pag   = document.getElementById('paginacion');
+      if (total <= 1) { pag.innerHTML = ''; return; }
+      let html = '';
+      if (pagina > 1) html += `<button onclick="irPagina(${pagina-1})">← Anterior</button>`;
+      for (let i = 1; i <= total; i++)
+        html += `<button class="${i === pagina ? 'active' : ''}" onclick="irPagina(${i})">${i}</button>`;
+      if (pagina < total) html += `<button onclick="irPagina(${pagina+1})">Siguiente →</button>`;
+      pag.innerHTML = html;
+    }
+
+    function irPagina(n) {
+      pagina = n;
+      renderizar();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function logout() {
+      localStorage.removeItem('co_usuario');
+      window.location.href = 'inicio-sesion.html';
+    }
+
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+
+    // Arrancar
+    cargarProductos();
+  </script>
+
+</body>
+</html>

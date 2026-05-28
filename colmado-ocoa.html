@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colmado Ocoa</title>
+  <link rel="stylesheet" href="colmado-ocoa.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="img/Logo.png" alt="Colmado Ocoa" class="nav-logo-img">
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="colmado-ocoa.html" class="nav-link active">Inicio</a>
+      <a href="productos.html" class="nav-link">Productos</a>
+      <a href="carrito.html" class="nav-link">Carrito</a>
+    </div>
+    <div class="nav-right">
+      <span class="user-chip" id="userChip">👤 Usuario</span>
+      <a href="carrito.html" class="cart-chip">
+        🛒 <span id="cartCount">0</span>
+      </a>
+      <button class="logout-btn" onclick="logout()" title="Cerrar sesión">⬅ Cerrar sesion</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Fresco y de calidad</div>
+      <h1 class="hero-title">Bienvenido al<br><span class="hero-accent">Colmado Ocoa</span></h1>
+      <p class="hero-desc">Todo lo que necesitas para tu hogar, al alcance de tu mano.</p>
+      <div class="hero-btns">
+        <a href="productos.html" class="btn-primary">Ver productos →</a>
+        <a href="carrito.html" class="btn-secondary">Mi carrito </a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="img/hero.jpg" alt="Colmado Ocoa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+    <img src="img/eslogan.jpg" alt="">
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <h2>Categorías</h2>
+      <a href="productos.html" class="ver-todos">Ver todos →</a>
+    </div>
+    <div class="cats-grid">
+      <a href="productos.html?cat=Granos" class="cat-card">
+        <span class="cat-name">Granos</span>
+      </a>
+      <a href="productos.html?cat=Lácteos" class="cat-card">
+        <span class="cat-name">Lácteos</span>
+      </a>
+      <a href="productos.html?cat=Carnes" class="cat-card">
+        <span class="cat-name">Carnes</span>
+      </a>
+      <a href="productos.html?cat=Bebidas" class="cat-card">
+        <span class="cat-name">Bebidas</span>
+      </a>
+      <a href="productos.html?cat=Dulces" class="cat-card">
+        <span class="cat-name">Dulces</span>
+      </a>
+      <a href="productos.html?cat=Enlatados" class="cat-card">
+        <span class="cat-name">Enlatados</span>
+      </a>
+      <a href="productos.html?cat=Condimentos" class="cat-card">
+        <span class="cat-name">Condimentos</span>
+      </a>
+      <a href="productos.html?cat=Desayuno" class="cat-card">
+        <span class="cat-name">Desayuno</span>
+           <a href="productos.html?cat=Viveres" class="cat-card">
+        <span class="cat-name">Viveres</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="section-header">
+      <h2>Productos destacados</h2>
+      <a href="productos.html" class="ver-todos">Ver todos →</a>
+    </div>
+    <div class="products-grid" id="featuredGrid">
+    </div>
+  </section>
+
+  <section class="info-banner">
+    <div class="info-item">
+      <div>
+        <strong>Atención rápida</strong>
+        <p>Pedidos sin complicaciones</p>
+      </div>
+    </div>
+    <div class="info-item">
+      <div>
+        <strong>25+ productos</strong>
+        <p>Amplio inventario disponible</p>
+      </div>
+    </div>
+    <div class="info-item">
+      <div>
+        <strong>Control digital</strong>
+        <p>Registro moderno de ventas</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span>Colmado Ocoa</span>
+      </div>
+      <p class="footer-copy">© 2026 Colmado Ocoa · Todos los derechos reservados</p>
+      <div class="footer-links">
+        <a href="colmado-ocoa.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="carrito.html">Carrito</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+        const productos = [
+      {id:1,  nombre:'Arroz Campos',          categoria:'Granos',      precio:40,  stock:100, img:'Arroz.jpg'},
+      {id:2,  nombre:'Habichuelas La Famosa', categoria:'Granos',      precio:50,  stock:80,  img:'Habichuela.jpg'},
+      {id:3,  nombre:'Azucar Cristal de Caña',categoria:'Granos',      precio:45,  stock:90,  img:'Azucar.jpg'},
+      {id:4,  nombre:'Aceite Crisol',         categoria:'Líquidos',    precio:150, stock:60,  img:'Aceite.jpg'},
+      {id:5,  nombre:'Leche La Vaquita',      categoria:'Lácteos',     precio:70,  stock:75,  img:'Leche.jpg'},
+      {id:6,  nombre:'Pan de Agua',           categoria:'Panadería',   precio:10,  stock:200, img:'Pan.jpg'},
+      {id:7,  nombre:'Huevos Lider',          categoria:'Lácteos',     precio:8,   stock:300, img:'Huevos.jpg'},
+      {id:8,  nombre:'Sal Refisal',           categoria:'Condimentos', precio:20,  stock:50,  img:'Sal.jpg'},
+      {id:9,  nombre:'Cafe Santo Domingo',    categoria:'Bebidas',     precio:120, stock:40,  img:'Cafe.jpg'},
+      {id:10, nombre:'Chocolate Embajador',   categoria:'Dulces',      precio:60,  stock:70,  img:'Chocolate.jpg'},
+      {id:11, nombre:'Refresco Kola Real',    categoria:'Bebidas',     precio:35,  stock:150, img:'Refresco.jpg'},
+      {id:12, nombre:'Agua Planeta Azul',     categoria:'Bebidas',     precio:25,  stock:200, img:'Agua.jpg'},
+      {id:13, nombre:'Harina Mazorca',        categoria:'Granos',      precio:55,  stock:60,  img:'Harina.jpg'},
+      {id:14, nombre:'Pasta Milano',          categoria:'Granos',      precio:30,  stock:80,  img:'Pasta.jpg'},
+      {id:15, nombre:'Sardinas Paco Fish',    categoria:'Enlatados',   precio:65,  stock:90,  img:'Sardinas.jpg'},
+      {id:16, nombre:'Atun Baldom',           categoria:'Enlatados',   precio:85,  stock:70,  img:'Atun.jpg'},
+      {id:17, nombre:'Galletas Princesa',     categoria:'Dulces',      precio:25,  stock:120, img:'Galletas.jpg'},
+      {id:18, nombre:'Mayonesa Baldom',       categoria:'Condimentos', precio:90,  stock:40,  img:'Mayonesa.jpg'},
+      {id:19, nombre:'Ketchup Baldom',        categoria:'Condimentos', precio:80,  stock:45,  img:'Ketchup.jpg'},
+      {id:20, nombre:'Jugo Rica Naranja',     categoria:'Bebidas',     precio:50,  stock:100, img:'Jugo.jpg'},
+      {id:21, nombre:'Cereal Honey Monster',  categoria:'Desayuno',    precio:150, stock:30,  img:'Cereal.jpg'},
+      {id:22, nombre:'Queso Cheddar Sosua',   categoria:'Lácteos',     precio:180, stock:25,  img:'Queso.jpg'},
+      {id:23, nombre:'Jamon Rivero',          categoria:'Carnes',      precio:200, stock:20,  img:'Jamon.jpg'},
+      {id:24, nombre:'Pollo Cibao',           categoria:'Carnes',      precio:220, stock:35,  img:'Pollo.jpg'},
+      {id:25, nombre:'Carne Res RES',         categoria:'Carnes',      precio:300, stock:15,  img:'Carne Res.jpg'}
+    ];
+
+    const usuario = localStorage.getItem('co_usuario') || 'Usuario';
+    document.getElementById('userChip').textContent = '👤 ' + usuario;
+
+    function getCart() {
+      return JSON.parse(localStorage.getItem('co_carrito') || '[]');
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      const total = cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cartCount').textContent = total;
+    }
+
+    function addToCart(id) {
+      const prod = productos.find(p => p.id === id);
+      let cart = getCart();
+      const idx = cart.findIndex(i => i.id === id);
+      if (idx >= 0) {
+        cart[idx].qty++;
+      } else {
+        cart.push({...prod, qty: 1});
+      }
+      localStorage.setItem('co_carrito', JSON.stringify(cart));
+      updateCartCount();
+      showToast(prod.nombre + ' agregado al carrito');
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = '✅ ' + msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function logout() {
+      localStorage.removeItem('co_usuario');
+      window.location.href = 'inicio-sesion.html';
+    }
+
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+
+    const grid = document.getElementById('featuredGrid');
+    productos.slice(0, 8).forEach(p => {
+      const imgPath = `img/${p.img}`;
+      grid.innerHTML += `
+        <div class="prod-card">
+          <div class="prod-img-wrap">
+            <img class="prod-img" src="${imgPath}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="prod-img-ph">🛒</div>
+          </div>
+          <div class="prod-info">
+            <div class="prod-nombre">${p.nombre}</div>
+            <div class="prod-cat">${p.categoria}</div>
+            <div class="prod-precio">$${p.precio.toFixed(2)}</div>
+          </div>
+          <button class="prod-add" onclick="addToCart(${p.id})">+ Agregar</button>
+        </div>`;
+    });
+
+    updateCartCount();
+  </script>
+</body>
+</html>
